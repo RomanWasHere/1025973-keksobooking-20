@@ -1,7 +1,7 @@
 # Личный проект «Кексобукинг» [![Build status][travis-image]][travis-url]
 
 * Студент: [Роман](https://up.htmlacademy.ru/javascript/20/user/1025973).
-* Наставник: `Неизвестно`.
+* Наставник: [Андрей Лутогин](https://htmlacademy.ru/profile/id1096725).
 
 ---
 
