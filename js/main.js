@@ -46,11 +46,13 @@ var PHOTOS = [
 ];
 
 // Получаем случайное число и возвращаем его
+// Служебная функция ?
 var getRandomElement = function (arr) {
   return arr[Math.floor(Math.random() * arr.length)];
 };
 
 // Получаем случайное число из минимальных и максимальных значений
+// Служебная функция ?
 var getRandomIntInclusive = function (min, max) {
   min = Math.ceil(min);
   max = Math.floor(max);
@@ -69,7 +71,7 @@ var getListOfOffers = function () {
   return offers;
 };
 
-// Создаем объект исходя из номера массива
+// Создаем объект исходя из порядкогового номера массива
 var createOffer = function (offerNumber) {
   var locationX = getRandomIntInclusive(0, MAP_WIDTH);
   var locationY = getRandomIntInclusive(MAP_TOP_Y, MAP_BOTTOM_Y);
@@ -122,7 +124,6 @@ var createPin = function (offer) {
   return pin;
 };
 
-
 // Рендерим пин
 var pin = document.querySelector('.map__pins');
 var renderPins = function (offers) {
@@ -133,8 +134,6 @@ var renderPins = function (offers) {
   pin.appendChild(fragment);
 };
 
-// Получаем количество доступного жилья
-var offers = getListOfOffers();
-
 // Рендерим пины на карте
+var offers = getListOfOffers();
 renderPins(offers);
