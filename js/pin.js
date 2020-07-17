@@ -17,12 +17,12 @@
     mapPoint.style.left = mark.location.x - (PinSize.WIDTH / 2) + 'px';
     mapPoint.querySelector('img').src = mark.author.avatar;
     mapPoint.querySelector('img').alt = mark.offer.title;
-    return mapPoint; /
+    return mapPoint;
   };
 
   // Записываем все метки во fragment
-  var renderMarks = function (marks) { 
-    var fragment = document.createDocumentFragment(); 
+  var renderMarks = function (marks) {
+    var fragment = document.createDocumentFragment();
     for (var i = 0; i < marks.length; i++) {
       var mark = marks[i];
       var pin = getMarkFragment(mark);
