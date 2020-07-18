@@ -56,7 +56,7 @@
   // Функция для проверки состояния активации формы (fieldset)
   var changeStateForm = function () {
     Array.from(fieldsets).forEach(function (fieldset) {
-      fieldset.disabled = !isActive; // Если страница не активная то fieldset выключен.
+      fieldset.disabled = !isActive;
     });
     Array.from(selects).forEach(function (select) {
       select.disabled = !isActive;
@@ -114,22 +114,14 @@
 
     var message = '';
 
-    if (roomNumber === RoomtType.ONE) {
-      if (capacityValue !== GuestType.ONE) {
-        message = 'Выберите не более 1 гостя';
-      }
-    } else if (roomNumber === RoomtType.TWO) {
-      if (capacityValue !== GuestType.ONE && capacityValue !== GuestType.TWO) {
-        message = 'Выберите не более 1 гостя или 2 гостей';
-      }
-    } else if (roomNumber === RoomtType.THREE) {
-      if (capacityValue !== GuestType.ONE && capacityValue !== GuestType.TWO && capacityValue !== GuestType.THREE) {
-        message = 'Выберите 3 гостей или 2 гостей или 1 гостя';
-      }
-    } else if (roomNumber === RoomtType.HUNDERT) {
-      if (capacityValue !== GuestType.NOT_FOR_GUEST) {
-        message = 'Не предназначены для гостей';
-      }
+    if (roomNumber === RoomtType.ONE && capacityValue !== GuestType.ONE) {
+      message = 'Выберите не более 1 гостя';
+    } else if (roomNumber === RoomtType.TWO && capacityValue !== GuestType.ONE && capacityValue !== GuestType.TWO) {
+      message = 'Выберите не более 1 гостя или 2 гостей';
+    } else if (roomNumber === RoomtType.THREE && capacityValue !== GuestType.ONE && capacityValue !== GuestType.TWO && capacityValue !== GuestType.THREE) {
+      message = 'Выберите 3 гостей или 2 гостей или 1 гостя';
+    } else if (roomNumber === RoomtType.HUNDERT && capacityValue !== GuestType.NOT_FOR_GUEST) {
+      message = 'Не предназначены для гостей';
     }
     offerCapacity.setCustomValidity(message);
   };

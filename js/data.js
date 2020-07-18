@@ -1,7 +1,6 @@
 'use strict';
 
 (function () {
-  var COUNT_USERS = 8;
 
   var PinLimit = {
     MIN_X: 300,
@@ -48,6 +47,7 @@
   ];
 
   // Переводим название типов жилья на русский
+  // Не получлось через объект = (
   var translateType = function (type) {
     switch (type) {
       case 'palace':
@@ -106,9 +106,9 @@
   };
 
   // Функция, возвращающая одну метку объявлений, заполенной данными
-  var getMark = function (index) {
+  var getMark = function (index, countUsers) {
 
-    for (var i = 0; i < COUNT_USERS; i++) {
+    for (var i = 0; i < countUsers; i++) {
       var mark = {
         author: {
           avatar: generateAvatar(index),
@@ -139,7 +139,7 @@
     var marks = [];
 
     for (var i = 0; i < count; i++) {
-      var mark = getMark(i);
+      var mark = getMark(i, count);
       marks.push(mark);
     }
     return marks;
