@@ -87,7 +87,6 @@
       y: evt.clientY
     };
 
-    // Фнкция для смещения метки относительно стартовой позиции
     var onMouseMove = function (moveEvt) {
       moveEvt.preventDefault();
 
