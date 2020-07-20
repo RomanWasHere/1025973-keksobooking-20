@@ -1,7 +1,10 @@
 'use strict';
 
 (function () {
-  var SERVER_URL = 'https://javascript.pages.academy/keksobooking/data';
+  var Url = {
+    LOAD: 'https://javascript.pages.academy/keksobooking/data',
+    UPLOAD: 'https://javascript.pages.academy/keksobooking'
+  };
 
   var Status = {
     SUCCESS: 200,
@@ -12,8 +15,7 @@
     TIMEOUT_TIME: 10000
   };
 
-  // Загрузка объявлений с сервера
-  var load = function (onSuccess, onError) {
+  var produceXhr = function (method, url, onSuccess, onError) {
     var xhr = new XMLHttpRequest();
     xhr.responseType = 'json';
 
@@ -52,13 +54,24 @@
       onError('Запрос не успел выполниться за ' + xhr.timeout + 'мс');
     });
 
-    xhr.timeout = Status.TIMEOUT_TIME; // 10s
+    xhr.timeout = Status.TIMEOUT_TIME;
 
-    xhr.open('GET', SERVER_URL);
-    xhr.send();
+    xhr.open(method, url);
+    return xhr;
+  };
+
+  // Загрузка объявлений с сервера
+  var load = function (onSuccess, onError) {
+    produceXhr('GET', Url.LOAD, onSuccess, onError).send();
+  };
+
+  // Отправка данных на сервер
+  var upload = function (onSuccess, onError, data) {
+    produceXhr('POST', Url.LOAD, onSuccess, onError).send(data);
   };
 
   window.backend = {
-    load: load
+    load: load,
+    upload: upload
   };
 })();

@@ -1,12 +1,12 @@
 'use strict';
 
 (function () {
-  var mapCardPopupTemplate = document.querySelector('#card').content.querySelector('.map__card.popup');
+  var popupTemplate = document.querySelector('#card').content.querySelector('.map__card.popup');
   var mapFiltersContainer = document.querySelector('.map__filters-container');
   var mapCard = null;
 
   // Обработчик закрытия окна по нажатию на ESC
-  var onPopupPress = function (evt) {
+  var onDocumentKeyDown = function (evt) {
     if (window.utils.isEscEvent(evt)) {
       removePopup();
     }
@@ -16,56 +16,59 @@
   var removePopup = function () {
     if (mapCard !== null) {
       mapCard.remove();
-      document.removeEventListener('keydown', onPopupPress);
+      window.pin.deactivatePin();
+      document.removeEventListener('keydown', onDocumentKeyDown);
     }
   };
 
   // Заполняем объявление на карте. Клонирование
-  var renderMapPopup = function (mark) {
+  var renderPopup = function (mark) {
     removePopup();
-    mapCard = mapCardPopupTemplate.cloneNode(true);
+    mapCard = popupTemplate.cloneNode(true);
     mapCard.querySelector('.popup__title').textContent = mark.offer.title;
     mapCard.querySelector('.popup__text--address').textContent = mark.offer.address;
     mapCard.querySelector('.popup__text--price').textContent = mark.offer.price + ' ₽/ночь';
-    mapCard.querySelector('.popup__type').textContent = window.data.translateType[mark.offer.type];
     mapCard.querySelector('.popup__text--capacity').textContent = mark.offer.rooms + ' комнаты для ' + mark.offer.guests + ' гостей';
     mapCard.querySelector('.popup__text--time').textContent = 'Заезд после ' + mark.offer.checkin + ', выезд до ' + mark.offer.checkout;
     mapCard.querySelector('.popup__features').textContent = mark.offer.description;
     mapCard.querySelector('.popup__avatar').src = mark.author.avatar;
-    renderPhotoContainer(mapCard, mark.offer.photos);
+    renderPhotos(mark.offer.photos);
     mapFiltersContainer.insertAdjacentElement('beforebegin', mapCard);
 
     var closePopupButton = mapCard.querySelector('.popup__close');
-    document.addEventListener('keydown', onPopupPress);
+    document.addEventListener('keydown', onDocumentKeyDown);
     closePopupButton.addEventListener('click', removePopup);
   };
 
   // Функция проверки конейнера с фотографиями на наличие фото
-  var renderPhotoContainer = function (ad, imgs) {
-    var adCardPhotos = ad.querySelector('.popup__photos');
-    if (adCardPhotos.length === 0) {
-      adCardPhotos.remove();
+  var renderPhotos = function (imgs) {
+    var popupPhoto = mapCard.querySelector('.popup__photos');
+    if (imgs.length === 0) {
+      popupPhoto.remove();
     } else {
-      renderPhotos(adCardPhotos, imgs);
+      renderPhotosImages(popupPhoto, imgs);
     }
   };
 
   // Колонируем фотографии в их контейнер
-  var renderPhotos = function (popupPhotos, photos) {
+  var renderPhotosImages = function (popupPhotos, photos) {
     var firstImage = popupPhotos.querySelector('.popup__photo');
     var fragment = document.createDocumentFragment();
     firstImage.remove();
 
-    for (var i = 0; i < photos.length; i++) {
+    photos.forEach(function (photo) {
       var cloneImage = firstImage.cloneNode(true);
-      cloneImage.src = photos[i];
+      cloneImage.src = photo;
       fragment.appendChild(cloneImage);
-    }
+    });
+
+    firstImage.remove();
     popupPhotos.appendChild(fragment);
   };
 
   // EXPORT
   window.card = {
-    renderPopup: renderMapPopup
+    renderPopup: renderPopup,
+    removePopup: removePopup
   };
 })();
