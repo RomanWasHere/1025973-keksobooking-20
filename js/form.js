@@ -1,28 +1,11 @@
 'use strict';
 
 (function () {
-  var TYPES = {
-    PALACE: 'palace',
-    FLAT: 'flat',
-    HOUSE: 'house',
-    BUNGALO: 'bungalo'
-  };
-
   var PriceNight = {
     ZERO: '0',
     ONE_THOUSAND: '1000',
     FIVE_THOUSAND: '5000',
     TEN_THOUSAND: '10000'
-  };
-
-  var RoomLimit = {
-    MIN: 1,
-    MAX: 100
-  };
-
-  var GuestLimit = {
-    MIN: 1,
-    MAX: 20
   };
 
   var RoomtType = {
@@ -39,7 +22,20 @@
     NOT_FOR_GUEST: '100'
   };
 
+  var TYPES = {
+    PALACE: 'palace',
+    FLAT: 'flat',
+    HOUSE: 'house',
+    BUNGALO: 'bungalo'
+  };
+
   var form = document.querySelector('.ad-form');
+  var main = document.querySelector('main');
+  var successPopup = document.querySelector('#success').content.querySelector('.success');
+  var errorPopup = document.querySelector('#error').content.querySelector('.error');
+  var error = document.querySelector('#error');
+  var closeButtonError = document.querySelector('.error__button');
+  var resetBtn = document.querySelector('.ad-form__reset');
   var offerTitle = form.querySelector('#title');
   var offerPrice = form.querySelector('#price');
   var offerRoomNumber = form.querySelector('#room_number');
@@ -50,11 +46,10 @@
   var selects = document.querySelectorAll('select');
   var inputs = document.querySelectorAll('input');
   var fieldsets = document.querySelectorAll('fieldset');
-  var addressInput = document.querySelector('input[name="address"]');
-  var isActive = false;
 
   // Функция для проверки состояния активации формы (fieldset)
-  var changeStateForm = function () {
+  var changeFormState = function (isActive) {
+
     Array.from(fieldsets).forEach(function (fieldset) {
       fieldset.disabled = !isActive;
     });
@@ -69,30 +64,44 @@
       form.classList.remove('ad-form--disabled');
     } else {
       form.classList.add('ad-form--disabled');
+      form.reset();
     }
   };
 
-  form.addEventListener('change', function (evt) {
-    var targetId = evt.target.id;
-    switch (targetId) {
-      case offerRoomNumber.id:
-      case offerCapacity.id:
-        validateCapacity();
-        break;
-      case offerTitle.id:
-        validateTitle();
-        break;
-      case offerPrice.id:
-        validatePrice();
-        break;
-      case offerType.id:
-        updatePriceLmit();
-        validatePrice();
-        break;
-      default: break;
-    }
-    updateTimes(targetId);
-  });
+  var addFormEvents = function () {
+    resetBtn.addEventListener('click', function (evt) {
+      evt.preventDefault();
+      changeFormState(false);
+      window.map.deactivate();
+    });
+
+    form.addEventListener('submit', function (evt) {
+      evt.preventDefault();
+      window.backend.upload(new FormData(form), onFormSuccessSubmit, onError);
+    });
+
+    form.addEventListener('change', function (evt) {
+      var targetId = evt.target.id;
+      switch (targetId) {
+        case offerRoomNumber.id:
+        case offerCapacity.id:
+          validateCapacity();
+          break;
+        case offerTitle.id:
+          validateTitle();
+          break;
+        case offerPrice.id:
+          validatePrice();
+          break;
+        case offerType.id:
+          updatePriceLmit();
+          validatePrice();
+          break;
+        default: break;
+      }
+      updateTimes(targetId);
+    });
+  };
 
   // Прописываем условия для правильного заполнения заголовка
   var validateTitle = function () {
@@ -114,19 +123,26 @@
 
     var message = '';
 
-    if (roomNumber === RoomtType.ONE && capacityValue !== GuestType.ONE) {
-      message = 'Выберите не более 1 гостя';
-    } else if (roomNumber === RoomtType.TWO && capacityValue !== GuestType.ONE && capacityValue !== GuestType.TWO) {
-      message = 'Выберите не более 1 гостя или 2 гостей';
-    } else if (roomNumber === RoomtType.THREE && capacityValue !== GuestType.ONE && capacityValue !== GuestType.TWO && capacityValue !== GuestType.THREE) {
-      message = 'Выберите 3 гостей или 2 гостей или 1 гостя';
-    } else if (roomNumber === RoomtType.HUNDERT && capacityValue !== GuestType.NOT_FOR_GUEST) {
-      message = 'Не предназначены для гостей';
+    if (roomNumber === RoomtType.ONE) {
+      if (capacityValue !== GuestType.ONE) {
+        message = 'Выберите не более 1 гостя';
+      }
+    } else if (roomNumber === RoomtType.TWO) {
+      if (capacityValue !== GuestType.ONE && capacityValue !== GuestType.TWO) {
+        message = 'Выберите не более 1 гостя или 2 гостей';
+      }
+    } else if (roomNumber === RoomtType.THREE) {
+      if (capacityValue !== GuestType.ONE && capacityValue !== GuestType.TWO && capacityValue !== GuestType.THREE) {
+        message = 'Выберите 3 гостей или 2 гостей или 1 гостя';
+      }
+    } else if (roomNumber === RoomtType.HUNDERT) {
+      if (capacityValue !== GuestType.NOT_FOR_GUEST) {
+        message = 'Не предназначены для гостей';
+      }
     }
     offerCapacity.setCustomValidity(message);
   };
 
-  // Функция для обновления времени
   var updateTimes = function (elementId) {
     switch (elementId) {
       case timeIn.id:
@@ -165,20 +181,16 @@
   // Прописываем условия для правильного заполнения поля с ценой жилья
   var validatePrice = function () {
     var housingTypeValue = offerType.value;
+
     var message = '';
 
     if (offerPrice.validity.rangeUnderflow) {
       switch (housingTypeValue) {
-        case TYPES.BUNGALO: message = 'Цена должна быть не менее 0 руб.';
-          break;
-        case TYPES.FLAT: message = 'Цена должна быть не менее 1000 руб.';
-          break;
-        case TYPES.HOUSE: message = 'Цена должна быть не менее 5000 руб.';
-          break;
-        case TYPES.PALACE: message = 'Цена должна быть не менее 10000 руб.';
-          break;
-        default: message = '';
-          break;
+        case TYPES.BUNGALO: message = 'Цена должна быть не менее 0 руб.'; break;
+        case TYPES.FLAT: message = 'Цена должна быть не менее 1000 руб.'; break;
+        case TYPES.HOUSE: message = 'Цена должна быть не менее 5000 руб.'; break;
+        case TYPES.PALACE: message = 'Цена должна быть не менее 10000 руб.'; break;
+        default: message = ''; break;
       }
     } else if (offerPrice.validity.rangeOverflow) {
       message = 'Цена должна быть не более 1 000 000 руб.';
@@ -186,15 +198,64 @@
     offerPrice.setCustomValidity(message);
   };
 
-  // Поставили стартовые координаты в поле с именем address
-  var putMainPinPositionToAddress = function (x, y) {
-    addressInput.value = x + ', ' + y;
+  // Функция закрытия сообщения по клику мышки и на Esk
+  var removeSuccessPopup = function () {
+    successPopup.remove();
+    successPopup.removeEventListener('click', onSuccessPopupClick);
+    document.removeEventListener('keydown', onDocumentKeyDownSuccess);
   };
 
-  var startingPage = function () {
-    isActive = true;
-    changeStateForm();
-    window.map.startMainPinPosition();
+  // Сообщение должно исчезать по клику на произвольную область экрана.
+  var onSuccessPopupClick = function () {
+    removeSuccessPopup();
+  };
+
+  // функция по закрытию успешного сообщения на Esk
+  var onDocumentKeyDownSuccess = function (evt) {
+    if (window.utils.isEscEvent(evt)) {
+      removeSuccessPopup();
+    }
+  };
+
+  // покажем сообщение об успешной отправке
+  var showSuccessPopup = function () {
+    main.insertAdjacentElement('afterbegin', successPopup);
+    successPopup.addEventListener('click', onSuccessPopupClick);
+    document.addEventListener('keydown', onDocumentKeyDownSuccess);
+  };
+
+  var closeError = function () {
+    error.remove();
+    document.removeEventListener('keydown', onDocumentKeyDownError);
+  };
+
+  // Сообщение должно исчезать по клику на произвольную область экрана.
+  var onErrorClick = function () {
+    closeError();
+  };
+
+  // функция по закрытию неуспешного сообщения на Esk
+  var onDocumentKeyDownError = function (evt) {
+    window.utils.isEscEvent(evt, closeError);
+  };
+
+  // Описываем неуспешную отправку данных серверу
+  var onError = function () {
+    main.insertAdjacentElement('afterbegin', errorPopup);
+    closeButtonError.addEventListener('click', onErrorClick);
+    errorPopup.addEventListener('click', onErrorClick);
+    document.addEventListener('keydown', onDocumentKeyDownError);
+  };
+
+  var onFormSuccessSubmit = function () {
+    showSuccessPopup();
+    changeFormState(false);
+    window.map.deactivate();
+  };
+
+  var prepare = function () {
+    changeFormState();
+    addFormEvents();
     validateTitle();
     validatePrice();
     validateCapacity();
@@ -202,12 +263,8 @@
   };
 
   window.form = {
-    TYPES: TYPES,
-    RoomLimit: RoomLimit,
-    GuestLimit: GuestLimit,
-    startingPage: startingPage,
-    putMainPinPositionToAddress: putMainPinPositionToAddress,
-    changeStateForm: changeStateForm
+    prepare: prepare,
+    changeFormState: changeFormState
   };
 })();
 
