@@ -264,7 +264,8 @@
 
   window.form = {
     prepare: prepare,
-    changeFormState: changeFormState
+    changeFormState: changeFormState,
+    TYPES: TYPES
   };
 })();
 
