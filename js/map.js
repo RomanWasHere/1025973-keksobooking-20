@@ -69,10 +69,10 @@
   };
 
   // Функция для перевода страницы в активное состояние
-  var activate = function (marks) {
+  var activate = function (pins) {
     isActive = true;
     map.classList.remove('map--faded');
-    window.pin.renderPins(marks);
+    window.filter.updatePins(pins);
     updateAddress();
     window.form.changeFormState(isActive);
   };
@@ -86,10 +86,12 @@
     loadStartPosition();
     window.pin.removePins();
     window.card.removePopup();
+    window.filter.deactivate();
+    window.filter.pins = [];
   };
 
   // Навешивание обработчиков событий
-  var initMainPinEvents = function () {
+  var initMainPinEvents = function () { // При клике на кнопку автивируем метки
     mapPinButtonMain.addEventListener('mousedown', function (evt) {
       evt.preventDefault();
 

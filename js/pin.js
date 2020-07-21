@@ -14,25 +14,12 @@
 
   // Отрисовываем метки на карте, клонирование
   var getPin = function (mark) {
-    var pin = pinTemplate.cloneNode(true);
-    pin.style.top = (mark.location.y - PinSize.HEIGHT) + 'px';
-    pin.style.left = mark.location.x - (PinSize.WIDTH / 2) + 'px';
-    pin.querySelector('img').src = mark.author.avatar;
-    pin.querySelector('img').alt = mark.offer.title;
-
-    var onMapPointClick = function () {
-      deactivatePin();
-      pin.classList.add('map__pin--active');
-    };
-
-    var onMapPointEnterPress = function (evt) {
-      window.util.isEnterEvent(evt, onMapPointClick);
-    };
-
-    pin.addEventListener('click', onMapPointClick);
-    pin.addEventListener('keydown', onMapPointEnterPress);
-
-    return pin;
+    var pinItem = pinTemplate.cloneNode(true);
+    pinItem.style.top = mark.location.y - PinSize.HEIGHT + 'px';
+    pinItem.style.left = mark.location.x - (PinSize.WIDTH / 2) + 'px';
+    pinItem.querySelector('img').src = mark.author.avatar;
+    pinItem.querySelector('img').alt = mark.offer.title;
+    return pinItem;
   };
 
   var deactivatePin = function () {
@@ -68,6 +55,7 @@
   window.pin = {
     renderPins: renderPins,
     removePins: removePins,
-    deactivatePin: deactivatePin
+    deactivatePin: deactivatePin,
+    getPin: getPin
   };
 })();
