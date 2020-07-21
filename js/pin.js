@@ -1,41 +1,41 @@
 'use strict';
 
 (function () {
-  var PinSize = {
-    WIDTH: 66,
-    HEIGHT: 66
-  };
+  var activePin = null;
 
   var pins = [];
-  var TWO = 2;
 
   var mapPins = document.querySelector('.map .map__pins');
   var pinTemplate = document.querySelector('#pin').content.querySelector('.map__pin');
 
-  // Отрисовываем метки на карте, клонирование
-  var getPin = function (mark) {
+  var getElement = function (mark) {
     var pinItem = pinTemplate.cloneNode(true);
-    pinItem.style.top = mark.location.y - PinSize.HEIGHT + 'px';
-    pinItem.style.left = mark.location.x - (PinSize.WIDTH / 2) + 'px';
+    pinItem.style.top = mark.location.y - window.utils.PinSize.HEIGHT + 'px';
+    pinItem.style.left = mark.location.x - (window.utils.PinSize.WIDTH / 2) + 'px';
     pinItem.querySelector('img').src = mark.author.avatar;
     pinItem.querySelector('img').alt = mark.offer.title;
+
     return pinItem;
   };
 
-  var deactivatePin = function () {
-    var mapActivePin = document.querySelector('.map__pin--active');
-    if (mapActivePin) {
-      mapActivePin.classList.remove('map__pin--active');
+  var addActivate = function (pin) {
+    activePin = pin;
+    activePin.classList.add('map__pin--active');
+  };
+
+  var removeActivate = function () {
+    if (activePin) {
+      activePin.classList.remove('map__pin--active');
+      activePin = null;
     }
   };
 
-  // Записываем все метки во fragment
-  var renderPins = function (marks) {
+  var renderElements = function (marks) {
     var fragment = document.createDocumentFragment();
 
     marks.forEach(function (mark, index) {
-      var pin = getPin(mark);
-      pin.tabIndex = index + TWO;
+      var pin = getElement(mark);
+      pin.tabIndex = index + window.utils.TWO;
       pins.push(pin);
 
       fragment.appendChild(pin);
@@ -44,8 +44,7 @@
     mapPins.appendChild(fragment);
   };
 
-  // функция для удаления меток из массива
-  var removePins = function () {
+  var removeElements = function () {
     pins.forEach(function (pin) {
       pin.remove();
     });
@@ -53,9 +52,9 @@
   };
 
   window.pin = {
-    renderPins: renderPins,
-    removePins: removePins,
-    deactivatePin: deactivatePin,
-    getPin: getPin
+    renderElements: renderElements,
+    removeElements: removeElements,
+    addActivate: addActivate,
+    removeActivate: removeActivate
   };
 })();

@@ -1,30 +1,8 @@
 'use strict';
 
 (function () {
-  var PinSetting = {
-    HALF_WIDTH: 33,
-    HALF_HEIGHT: 33,
-    TAIL_HEIGHT: 16,
-    MIN_X: 0,
-    MIN_Y: 130,
-    MAX_Y: 630
-  };
-
-  var rect = document.querySelector('.map__overlay').getBoundingClientRect();
-  var addressInput = document.querySelector('input[name="address"]');
-
-  // Границы доступной области для перемещения метки
-  var MIN_COORD = {
-    X: PinSetting.MIN_X - PinSetting.HALF_WIDTH,
-    Y: PinSetting.MIN_Y - PinSetting.HALF_HEIGHT - PinSetting.TAIL_HEIGHT
-  };
-
-  var MAX_COORD = {
-    X: rect.width - PinSetting.HALF_WIDTH,
-    Y: PinSetting.MAX_Y - PinSetting.HALF_HEIGHT - PinSetting.TAIL_HEIGHT
-  };
-
   var map = document.querySelector('.map');
+  var addressInput = document.querySelector('input[name="address"]');
   var mapPinButtonMain = document.querySelector('.map__pin--main');
   var isActive = false;
 
@@ -34,19 +12,20 @@
     var y = 0;
 
     if (isActive) {
-      x = mapPinButtonMain.offsetLeft + PinSetting.HALF_HEIGHT;
-      y = mapPinButtonMain.offsetTop + PinSetting.HALF_HEIGHT + PinSetting.TAIL_HEIGHT;
+      x = mapPinButtonMain.offsetLeft + window.utils.PinSetting.HALF_HEIGHT;
+      y = mapPinButtonMain.offsetTop + window.utils.PinSetting.HALF_HEIGHT + window.utils.PinSetting.TAIL_HEIGHT;
     } else {
-      x = mapPinButtonMain.offsetLeft + PinSetting.HALF_WIDTH;
-      y = mapPinButtonMain.offsetTop + PinSetting.HALF_HEIGHT;
+      x = mapPinButtonMain.offsetLeft + window.utils.PinSetting.HALF_WIDTH;
+      y = mapPinButtonMain.offsetTop + window.utils.PinSetting.HALF_HEIGHT;
     }
     addressInput.value = x + ', ' + y;
   };
 
   // функция добавления для одной метки обработчика события.
-  var addPinClick = function (pin, mark) {
-    pin.addEventListener('click', function () {
-      window.card.renderPopup(mark);
+  var addPinClick = function (pin, mark) { // параметры: фрагмент отрисовки марка на карте и текущая марка
+    pin.addEventListener('click', function () { // на отрисованного марка на карте вешаем обработчик клика
+      window.card.renderPopup(mark); // при нажатии вызывать функцию для рисования попапа
+      window.pin.addActivate(pin); // через замыкание передаем наш пин, чтобы он посвечивался при появлении попапа
     });
   };
 
@@ -71,44 +50,51 @@
   // Функция для перевода страницы в активное состояние
   var activate = function (pins) {
     isActive = true;
-    map.classList.remove('map--faded');
+    map.classList.remove('map--faded'); // Активируем карту
     window.filter.updatePins(pins);
     updateAddress();
-    window.form.changeFormState(isActive);
+    window.form.activate(); // Функция для проверки состояния активации и активацию формы (fieldset)
+    window.filter.activate();
   };
 
   // Функция для перевода страницы в не активное состояние
   var deactivate = function () {
     isActive = false;
-    map.classList.add('map--faded');
-    window.form.changeFormState(isActive);
+    map.classList.add('map--faded'); // Деактивируем карт
+    window.form.deactivate(); // неактивная форма
+    loadStartPosition(); // Возвращаяем метку на первоначальное место
     updateAddress();
-    loadStartPosition();
-    window.pin.removePins();
+    window.pin.removeElements();
     window.card.removePopup();
     window.filter.deactivate();
+    window.photo.remove();
     window.filter.pins = [];
   };
 
   // Навешивание обработчиков событий
   var initMainPinEvents = function () { // При клике на кнопку автивируем метки
-    mapPinButtonMain.addEventListener('mousedown', function (evt) {
+    // Перетаскиваем метку
+
+    var minCoord = window.utils.getMinCoord();
+    var maxCoord = window.utils.getMaxCoord();
+
+    mapPinButtonMain.addEventListener('mousedown', function (evt) { // обработаем событие начала перетаскивания метки mousedown.
       evt.preventDefault();
 
       if (!isActive && window.utils.isMouseLeftEvent(evt)) {
-        window.backend.load(activate);
+        window.backend.load(activate, window.form.showErrorPopup); // функция для получения данных от сервера
       }
 
-      var startCoords = {
+      var startCoords = { // Запомним координаты точки, с которой мы начали перемещать метку.
         x: evt.clientX,
         y: evt.clientY
       };
 
-      // Фнкция для смещения метки относительно стартовой позиции
+      // Функция для смещения метки относительно стартовой позиции
       var onMouseMove = function (moveEvt) {
         moveEvt.preventDefault();
 
-        var shift = {
+        var shift = { // При каждом движении мыши обновим смещение от старта для смещения на нужную величину.
           x: startCoords.x - moveEvt.clientX,
           y: startCoords.y - moveEvt.clientY
         };
@@ -119,45 +105,45 @@
         };
 
         var coordinates = {
-          x: mapPinButtonMain.offsetLeft - shift.x,
+          x: mapPinButtonMain.offsetLeft - shift.x, // обновляем координаты после смещения мыши
           y: mapPinButtonMain.offsetTop - shift.y
         };
 
-        if (coordinates.x < MIN_COORD.X) {
-          coordinates.x = MIN_COORD.X;
-        } else if (coordinates.x > MAX_COORD.X) {
-          coordinates.x = MAX_COORD.X;
+        if (coordinates.x < minCoord.x) { // Проверяем не заходит ли метка за рамки
+          coordinates.x = minCoord.x;
+        } else if (coordinates.x > maxCoord.x) {
+          coordinates.x = maxCoord.x;
         }
 
-        if (coordinates.y < MIN_COORD.Y) {
-          coordinates.y = MIN_COORD.Y;
-        } else if (coordinates.y > MAX_COORD.Y) {
-          coordinates.y = MAX_COORD.Y;
+        if (coordinates.y < minCoord.y) {
+          coordinates.y = minCoord.y;
+        } else if (coordinates.y > maxCoord.y) {
+          coordinates.y = maxCoord.y;
         }
 
-        mapPinButtonMain.style.top = coordinates.y + 'px';
+        mapPinButtonMain.style.top = coordinates.y + 'px'; // получаем новые координаты после смещения
         mapPinButtonMain.style.left = coordinates.x + 'px';
 
         updateAddress(coordinates.x, coordinates.y);
       };
 
       // Удаление обработчиков событий с mousemove, mouseup
-      var onMouseUp = function (upEvt) {
+      var onMouseUp = function (upEvt) { // При отпускании мыши нужно переставать слушать события движения мыши.
         upEvt.preventDefault();
 
         document.removeEventListener('mousemove', onMouseMove);
         document.removeEventListener('mouseup', onMouseUp);
       };
 
-      document.addEventListener('mousemove', onMouseMove);
-      document.addEventListener('mouseup', onMouseUp);
+      document.addEventListener('mousemove', onMouseMove); // Добавим обработчики события передвижения мыши
+      document.addEventListener('mouseup', onMouseUp); // и отпускания кнопки мыши.
     });
 
     // Обработчикоткрытия закрытия окна по нажатию на Enter
     mapPinButtonMain.addEventListener('keydown', function (evt) {
       if (!isActive && window.utils.isEnterEvent(evt)) {
         window.backend.load(activate);
-      }
+      } // При клике на левую кнопку мыши автивируем метки
     });
   };
 

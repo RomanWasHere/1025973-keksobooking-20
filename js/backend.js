@@ -1,20 +1,6 @@
 'use strict';
 
 (function () {
-  var Url = {
-    LOAD: 'https://javascript.pages.academy/keksobooking/data',
-    UPLOAD: 'https://javascript.pages.academy/keksobooking'
-  };
-
-  var Status = {
-    SUCCESS: 200,
-    INVALID_REQUEST: 400,
-    NOT_AUTHORIZED: 401,
-    ERROR_NOT_FOUND: 404,
-    SERVER_ERROR: 500,
-    TIMEOUT_TIME: 10000
-  };
-
   var produceXhr = function (method, url, onSuccess, onError) {
     var xhr = new XMLHttpRequest();
     xhr.responseType = 'json';
@@ -22,20 +8,20 @@
     xhr.addEventListener('load', function () {
       var error;
       switch (xhr.status) {
-        case Status.SUCCESS:
+        case window.utils.Status.SUCCESS:
           onSuccess(xhr.response);
           break;
 
-        case Status.INVALID_REQUEST:
+        case window.utils.Status.INVALID_REQUEST:
           error = 'Неверный запрос';
           break;
-        case Status.NOT_AUTHORIZED:
+        case window.utils.Status.NOT_AUTHORIZED:
           error = 'Пользователь не авторизован';
           break;
-        case Status.ERROR_NOT_FOUND:
+        case window.utils.Status.ERROR_NOT_FOUND:
           error = 'Ничего не найдено';
           break;
-        case Status.SERVER_ERROR:
+        case window.utils.Status.SERVER_ERROR:
           error = 'Во время обращения к серверу произошла ошибка. Пожалуйста, проверьте ваше интернет-соединение и обновите страницу';
           break;
         default:
@@ -54,20 +40,17 @@
       onError('Запрос не успел выполниться за ' + xhr.timeout + 'мс');
     });
 
-    xhr.timeout = Status.TIMEOUT_TIME;
-
+    xhr.timeout = window.utils.Status.TIMEOUT_TIME;
     xhr.open(method, url);
     return xhr;
   };
 
-  // Загрузка объявлений с сервера
   var load = function (onSuccess, onError) {
-    produceXhr('GET', Url.LOAD, onSuccess, onError).send();
+    produceXhr('GET', window.utils.Url.LOAD, onSuccess, onError).send();
   };
 
-  // Отправка данных на сервер
   var upload = function (onSuccess, onError, data) {
-    produceXhr('POST', Url.LOAD, onSuccess, onError).send(data);
+    produceXhr('POST', window.utils.Url.UPLOAD, onSuccess, onError).send(data);
   };
 
   window.backend = {
@@ -75,3 +58,4 @@
     upload: upload
   };
 })();
+
