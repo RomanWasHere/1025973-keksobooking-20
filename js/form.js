@@ -4,19 +4,19 @@
 
   var form = document.querySelector('.ad-form');
   var main = document.querySelector('main');
+  var resetBtn = document.querySelector('.ad-form__reset');
   var successPopupTemplate = document.querySelector('#success').content.querySelector('.success');
   var errorPopupTemplate = document.querySelector('#error').content.querySelector('.error');
-  var resetBtn = document.querySelector('.ad-form__reset'); // кнопка для сброса заполнеения в форме
   var offerTitle = form.querySelector('#title');
   var offerPrice = form.querySelector('#price');
   var offerRoomNumber = form.querySelector('#room_number');
   var offerCapacity = form.querySelector('#capacity');
   var timeOut = form.querySelector('#timeout');
   var timeIn = document.querySelector('#timein');
-  var offerType = form.querySelector('#type');
-  var selects = document.querySelectorAll('select');
   var inputs = document.querySelectorAll('input');
+  var selects = document.querySelectorAll('select');
   var fieldsets = document.querySelectorAll('fieldset');
+  var offerType = form.querySelector('#type');
 
   var errorPopup = null;
   var successPopup = null;
